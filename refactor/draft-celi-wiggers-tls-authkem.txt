@@ -5,14 +5,14 @@
 TLS Working Group                                                S. Celi
 Internet-Draft                                                Cloudflare
 Intended status: Informational                                P. Schwabe
-Expires: 29 August 2022                     Radboud University & MPI S&P
+Expires: 1 September 2022                   Radboud University & MPI S&P
                                                               D. Stebila
                                                   University of Waterloo
                                                              N. Sullivan
                                                               Cloudflare
                                                               T. Wiggers
                                                       Radboud University
-                                                        25 February 2022
+                                                        28 February 2022
 
 
                   KEM-based Authentication for TLS 1.3
@@ -50,7 +50,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 29 August 2022.
+   This Internet-Draft will expire on 1 September 2022.
 
 Copyright Notice
 
@@ -94,22 +94,25 @@ Table of Contents
        6.4.4.  Explicit Authentication Messages
    7.  Security Considerations
      7.1.  Implicit authentication
-   8.  OLD TEXT BELOW
-   9.  Protocol Overview
-     9.1.  Prior-knowledge KEM-Auth
-     9.2.  Key Exchange Messages
-       9.2.1.  Client Hello
-       9.2.2.  Server Hello
-       9.2.3.  Hello Retry Request
-       9.2.4.  Extensions
-       9.2.5.  Implicit Authentication Messages
-       9.2.6.  Certificate
-       9.2.7.  KEM Encapsulation
-       9.2.8.  Explicit Authentication Messages
-   10. References
-     10.1.  Normative References
-     10.2.  Informative References
+   8.  References
+     8.1.  Normative References
+     8.2.  Informative References
    Appendix A.  Acknowledgements
+   Appendix B.  Open points of discussion
+     B.1.  Authentication concerns for client authentication requests.
+     B.2.  Interaction with signing certificates
+   Appendix C.  OLD TEXT BELOW
+   Appendix D.  Protocol Overview
+     D.1.  Prior-knowledge KEM-Auth
+     D.2.  Key Exchange Messages
+       D.2.1.  Client Hello
+       D.2.2.  Server Hello
+       D.2.3.  Hello Retry Request
+       D.2.4.  Extensions
+       D.2.5.  Implicit Authentication Messages
+       D.2.6.  Certificate
+       D.2.7.  KEM Encapsulation
+       D.2.8.  Explicit Authentication Messages
    Authors' Addresses
 
 1.  Introduction
@@ -649,7 +652,7 @@ Table of Contents
    is to use HKDF-Extract with the Salt being the current secret state
    and the Input Keying Material (IKM) being the new secret to be added.
 
-   The key schedule proceeds as follows:
+   The full key schedule proceeds as follows:
 
             0
             |
@@ -794,23 +797,26 @@ be used. Otherwise, the `0` value is used.
 
 7.  Security Considerations
 
-   *  The academic works proposing KEM-Auth contain a in-depth technical
-      discussion of and a proof of the security of the handshake
-      protocol without client authentication [KEMTLS].  The work
-      proposing the variant protocol [KEMTLSPDK] with pre-distributed
-      public keys has a proof for both unilaterally and mutually
-      authenticated handshakes.
+   *  The academic works proposing AuthKEM (KEMTLS) contain a in-depth
+      technical discussionof and a proof of the security of the
+      handshake protocol without client authentication [KEMTLS].  The
+      work proposing the variant protocol [KEMTLSPDK] with pre-
+      distributed public keys has a proof for both unilaterally and
+      mutually authenticated handshakes.
+
+   *  We have proofs of the security of KEMTLS and KEMTLS-PDK in
+      Tamarin.  The academic write-up of this is work in progress.
 
    *  Application Data sent prior to receiving the server's last
       explicit authentication message (the Finished message) can be
-      subject to a client downgrade attack, and has weaker forward
-      secrecy compared to TLS 1.3.  Full downgrade resilience and
-      forward secrecy is achieved once the handshake completes.
+      subject to a client certificate suite downgrade attack.  Full
+      downgrade resilience and forward secrecy is achieved once the
+      handshake completes.
 
    *  The client's certificate is kept secret from active observers by
       the derivation of the client_authenticated_handshake_secret, which
       ensures that only the intended server can read the client's
-      identity.
+      identity.]
 
    *  When the client opportunistically sends its certificate, it is not
       encrypted under a forward-secure key.  This has similar
@@ -856,9 +862,119 @@ be used. Otherwise, the `0` value is used.
    server's last explicit Authentication message, any data sent at that
    point is, being sent to an implicitly authenticated peer.
 
-8.  OLD TEXT BELOW
+8.  References
 
-9.  Protocol Overview
+8.1.  Normative References
+
+   [I-D.ietf-tls-semistatic-dh]
+              Rescorla, E., Sullivan, N., and C. A. Wood, "Semi-Static
+              Diffie-Hellman Key Establishment for TLS 1.3", Work in
+              Progress, Internet-Draft, draft-ietf-tls-semistatic-dh-01,
+              7 March 2020, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-tls-semistatic-dh-01>.
+
+   [I-D.ietf-tls-subcerts]
+              Barnes, R., Iyengar, S., Sullivan, N., and E. Rescorla,
+              "Delegated Credentials for TLS", Work in Progress,
+              Internet-Draft, draft-ietf-tls-subcerts-11, 23 September
+              2021, <https://datatracker.ietf.org/doc/html/draft-ietf-
+              tls-subcerts-11>.
+
+   [I-D.irtf-cfrg-hpke]
+              Barnes, R. L., Bhargavan, K., Lipp, B., and C. A. Wood,
+              "Hybrid Public Key Encryption", Work in Progress,
+              Internet-Draft, draft-irtf-cfrg-hpke-12, 2 September 2021,
+              <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-
+              hpke-12>.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC8410]  Josefsson, S. and J. Schaad, "Algorithm Identifiers for
+              Ed25519, Ed448, X25519, and X448 for Use in the Internet
+              X.509 Public Key Infrastructure", RFC 8410,
+              DOI 10.17487/RFC8410, August 2018,
+              <https://www.rfc-editor.org/rfc/rfc8410>.
+
+   [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
+              Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
+              <https://www.rfc-editor.org/rfc/rfc8446>.
+
+8.2.  Informative References
+
+   [KEMTLS]   Stebila, D., Schwabe, P., and T. Wiggers, "Post-Quantum
+              TLS without Handshake Signatures",
+              DOI 10.1145/3372297.3423350, IACR
+              ePrint https://ia.cr/2020/534, November 2020,
+              <https://doi.org/10.1145/3372297.3423350>.
+
+   [KEMTLSPDK]
+              Stebila, D., Schwabe, P., and T. Wiggers, "More Efficient
+              KEMTLS with Pre-Shared Keys",
+              DOI 10.1007/978-3-030-88418-5_1, IACR
+              ePrint https://ia.cr/2021/779, May 2021,
+              <https://doi.org/10.1007/978-3-030-88418-5_1>.
+
+   [KW16]     Krawczyk, H. and H. Wee, "The OPTLS Protocol and TLS 1.3",
+              Proceedings of Euro S"P 2016 , 2016,
+              <https://eprint.iacr.org/2015/978>.
+
+   [NISTPQC]  NIST, "Post-Quantum Cryptography Standardization", 2020.
+
+   [RFC5280]  Cooper, D., Santesson, S., Farrell, S., Boeyen, S.,
+              Housley, R., and W. Polk, "Internet X.509 Public Key
+              Infrastructure Certificate and Certificate Revocation List
+              (CRL) Profile", RFC 5280, DOI 10.17487/RFC5280, May 2008,
+              <https://www.rfc-editor.org/rfc/rfc5280>.
+
+   [RFC5869]  Krawczyk, H. and P. Eronen, "HMAC-based Extract-and-Expand
+              Key Derivation Function (HKDF)", RFC 5869,
+              DOI 10.17487/RFC5869, May 2010,
+              <https://www.rfc-editor.org/rfc/rfc5869>.
+
+Appendix A.  Acknowledgements
+
+   This work has been supported by the European Research Council through
+   Starting Grant No. 805031 (EPOQUE).
+
+Appendix B.  Open points of discussion
+
+   The following are open points for discussion.  The corresponding
+   Github issues will be linked.
+
+B.1.  Authentication concerns for client authentication requests.
+
+   Tracked by Issue #16 (https://github.com/claucece/draft-celi-wiggers-
+   tls-authkem/issues/16).
+
+   The certificate request message from the server can not be
+   authenticated by the AuthKEM mechanism.  This is already somewhat
+   discussed above and under security considerations.  We might want to
+   allow clients to refuse client auth for scenarios where this is a
+   concern.
+
+B.2.  Interaction with signing certificates
+
+   Tracked by Issue #20 (https://github.com/claucece/draft-celi-wiggers-
+   tls-authkem/issues/20).
+
+   In the current state of the draft, we have not yet discussed
+   combining traditional signature-based authentication with KEM-based
+   authentication.  One might imagine that the Client has a sigining
+   certificate and the server has a KEM public key.
+
+   In the current draft, clients MUST use a KEM certificate algorithm if
+   the server negotiated AuthKEM.
+
+Appendix C.  OLD TEXT BELOW
+
+Appendix D.  Protocol Overview
 
    Figure 1 below shows the basic full KEM-authentication (KEM-Auth)
    handshake:
@@ -938,7 +1054,7 @@ Auth | <KEMEncapsulation>                                 | Auth
    explicit authentication is achieved: when the Client receives the
    Finished message from the Server.
 
-9.1.  Prior-knowledge KEM-Auth
+D.1.  Prior-knowledge KEM-Auth
 
    Given the added number of round-trips of KEM-auth compared to the TLS
    1.3, the handshake can be improved by the usage of pre-distributed
@@ -996,7 +1112,7 @@ Auth | <KEMEncapsulation>                                 | Auth
    be sent encrypted by using the shared secret derived from the
    kem_encapsulation message.
 
-9.2.  Key Exchange Messages
+D.2.  Key Exchange Messages
 
    KEM-Auth uses the same key exchange messages as TLS 1.3 with this
    exceptions:
@@ -1010,7 +1126,7 @@ Auth | <KEMEncapsulation>                                 | Auth
    KEM-Auth preserves the same cryptographic negotiation with the
    addition of the KEM algorithms to the signature_algorithms.
 
-9.2.1.  Client Hello
+D.2.1.  Client Hello
 
    KEM-Auth uses the ClientHello message as described for TLS 1.3.  When
    used in a pre-distributed mode, however, two extensions are
@@ -1021,7 +1137,7 @@ Auth | <KEMEncapsulation>                                 | Auth
    Certificate message gets send alongside the ClientHello one for
    mutual authentication.
 
-9.2.2.  Server Hello
+D.2.2.  Server Hello
 
    KEM-Auth uses the ServerHello message as described for TLS 1.3.  When
    used in a pre-distributed mode, however, one extension is mandatory:
@@ -1040,16 +1156,16 @@ Auth | <KEMEncapsulation>                                 | Auth
 
    Refer to Section 8.1 for information on how to derive this secrets.
 
-9.2.3.  Hello Retry Request
+D.2.3.  Hello Retry Request
 
    KEM-Auth uses the ServerHello message as described for TLS 1.3.  When
    used in a pre-distributed mode for mutual authentication, a
    HelloRetryRequest message can be sent, but the client's Certificate
    message is ignored.
 
-9.2.4.  Extensions
+D.2.4.  Extensions
 
-9.2.5.  Implicit Authentication Messages
+D.2.5.  Implicit Authentication Messages
 
    As discussed, KEM-Auth generally uses a common set of messages for
    implicit authentication and key confirmation: Certificate and
@@ -1090,7 +1206,7 @@ Auth | <KEMEncapsulation>                                 | Auth
 
    *  a Master Key.
 
-9.2.6.  Certificate
+D.2.6.  Certificate
 
    KEM-Auth uses the same Certificate message as TLS 1.3.
 
@@ -1102,7 +1218,7 @@ Auth | <KEMEncapsulation>                                 | Auth
    client MUST be signed by an authentication algorithm advertised by
    the server or client.
 
-9.2.7.  KEM Encapsulation
+D.2.7.  KEM Encapsulation
 
    This message is used to provide implicit proof that an endpoint
    possesses the private key(s) corresponding to its certificate by
@@ -1155,7 +1271,7 @@ Auth | <KEMEncapsulation>                                 | Auth
    generated.  It MUST be set to the value in the Certificate message to
    which the encapsulation was computed.
 
-9.2.8.  Explicit Authentication Messages
+D.2.8.  Explicit Authentication Messages
 
    As discussed, KEM-Auth generally uses a message for explicit
    authentication: Finished message.  Note that in the non pre-
@@ -1201,87 +1317,6 @@ Auth | <KEMEncapsulation>                                 | Auth
    appropriate application traffic key as described in TLS 1.3.  In
    particular, this includes any alerts sent by the server in response
    to client Certificate and KEMEncapsulation messages.
-
-10.  References
-
-10.1.  Normative References
-
-   [I-D.ietf-tls-semistatic-dh]
-              Rescorla, E., Sullivan, N., and C. A. Wood, "Semi-Static
-              Diffie-Hellman Key Establishment for TLS 1.3", Work in
-              Progress, Internet-Draft, draft-ietf-tls-semistatic-dh-01,
-              7 March 2020, <https://datatracker.ietf.org/doc/html/
-              draft-ietf-tls-semistatic-dh-01>.
-
-   [I-D.ietf-tls-subcerts]
-              Barnes, R., Iyengar, S., Sullivan, N., and E. Rescorla,
-              "Delegated Credentials for TLS", Work in Progress,
-              Internet-Draft, draft-ietf-tls-subcerts-11, 23 September
-              2021, <https://datatracker.ietf.org/doc/html/draft-ietf-
-              tls-subcerts-11>.
-
-   [I-D.irtf-cfrg-hpke]
-              Barnes, R. L., Bhargavan, K., Lipp, B., and C. A. Wood,
-              "Hybrid Public Key Encryption", Work in Progress,
-              Internet-Draft, draft-irtf-cfrg-hpke-12, 2 September 2021,
-              <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-
-              hpke-12>.
-
-   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
-              Requirement Levels", BCP 14, RFC 2119,
-              DOI 10.17487/RFC2119, March 1997,
-              <https://www.rfc-editor.org/rfc/rfc2119>.
-
-   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
-              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
-              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
-
-   [RFC8410]  Josefsson, S. and J. Schaad, "Algorithm Identifiers for
-              Ed25519, Ed448, X25519, and X448 for Use in the Internet
-              X.509 Public Key Infrastructure", RFC 8410,
-              DOI 10.17487/RFC8410, August 2018,
-              <https://www.rfc-editor.org/rfc/rfc8410>.
-
-   [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
-              Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
-              <https://www.rfc-editor.org/rfc/rfc8446>.
-
-10.2.  Informative References
-
-   [KEMTLS]   Stebila, D., Schwabe, P., and T. Wiggers, "Post-Quantum
-              TLS without Handshake Signatures",
-              DOI 10.1145/3372297.3423350, IACR
-              ePrint https://ia.cr/2020/534, November 2020,
-              <https://doi.org/10.1145/3372297.3423350>.
-
-   [KEMTLSPDK]
-              Stebila, D., Schwabe, P., and T. Wiggers, "More Efficient
-              KEMTLS with Pre-Shared Keys",
-              DOI 10.1007/978-3-030-88418-5_1, IACR
-              ePrint https://ia.cr/2021/779, May 2021,
-              <https://doi.org/10.1007/978-3-030-88418-5_1>.
-
-   [KW16]     Krawczyk, H. and H. Wee, "The OPTLS Protocol and TLS 1.3",
-              Proceedings of Euro S"P 2016 , 2016,
-              <https://eprint.iacr.org/2015/978>.
-
-   [NISTPQC]  NIST, "Post-Quantum Cryptography Standardization", 2020.
-
-   [RFC5280]  Cooper, D., Santesson, S., Farrell, S., Boeyen, S.,
-              Housley, R., and W. Polk, "Internet X.509 Public Key
-              Infrastructure Certificate and Certificate Revocation List
-              (CRL) Profile", RFC 5280, DOI 10.17487/RFC5280, May 2008,
-              <https://www.rfc-editor.org/rfc/rfc5280>.
-
-   [RFC5869]  Krawczyk, H. and P. Eronen, "HMAC-based Extract-and-Expand
-              Key Derivation Function (HKDF)", RFC 5869,
-              DOI 10.17487/RFC5869, May 2010,
-              <https://www.rfc-editor.org/rfc/rfc5869>.
-
-Appendix A.  Acknowledgements
-
-   This work has been supported by the European Research Council through
-   Starting Grant No. 805031 (EPOQUE).
 
 Authors' Addresses
 
