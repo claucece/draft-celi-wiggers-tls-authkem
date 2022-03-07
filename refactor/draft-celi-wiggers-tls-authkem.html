@@ -11,9 +11,9 @@
 <meta content="Nick Sullivan" name="author">
 <meta content="Thom Wiggers" name="author">
 <meta content="
-       This document gives a construction for KEM-based authentication in TLS
-1.3. The overall design approach is a simple: usage of Key Encapsulation
-Mechanisms (KEMs) to achieve certificate-based authentication. 
+       This document gives a construction for a Key Encapsulation Mechanism (KEM)-based
+authentication mechanism in TLS 1.3. This proposal authenticates peers via a key
+exchange protocol, using their long-term (KEM) public keys. 
     " name="description">
 <meta content="xml2rfc 3.12.3" name="generator">
 <meta content="Internet-Draft" name="keyword">
@@ -1070,9 +1070,9 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 <h1 id="title">KEM-based Authentication for TLS 1.3</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">This document gives a construction for KEM-based authentication in TLS
-1.3. The overall design approach is a simple: usage of Key Encapsulation
-Mechanisms (KEMs) to achieve certificate-based authentication.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">This document gives a construction for a Key Encapsulation Mechanism (KEM)-based
+authentication mechanism in TLS 1.3. This proposal authenticates peers via a key
+exchange protocol, using their long-term (KEM) public keys.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-discussion-venues">
@@ -1162,7 +1162,7 @@ Mechanisms (KEMs) to achieve certificate-based authentication.<a href="#section-
                 <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="xref">4.2</a>.  <a href="#name-relevant-handshake-messages" class="xref">Relevant handshake messages</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
-                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="xref">4.3</a>.  <a href="#name-differences-with-rfc8446-tl" class="xref">Differences with RFC8446 TLS 1.3</a></p>
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="xref">4.3</a>.  <a href="#name-overview-of-key-differences" class="xref">Overview of key differences with RFC8446 TLS 1.3</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
                 <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="xref">4.4</a>.  <a href="#name-implicit-and-explicit-authe" class="xref">Implicit and explicit authentication</a></p>
@@ -1195,6 +1195,9 @@ Mechanisms (KEMs) to achieve certificate-based authentication.<a href="#section-
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2.2.1">
                     <p id="section-toc.1-1.6.2.2.2.1.1"><a href="#section-6.2.1" class="xref">6.2.1</a>.  <a href="#name-stored-auth-key" class="xref">Stored Auth Key</a></p>
 </li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2.2.2">
+                    <p id="section-toc.1-1.6.2.2.2.2.1"><a href="#section-6.2.2" class="xref">6.2.2</a>.  <a href="#name-early-authentication" class="xref">Early authentication</a></p>
+</li>
                 </ul>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.3">
@@ -1224,6 +1227,9 @@ Mechanisms (KEMs) to achieve certificate-based authentication.<a href="#section-
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1">
                 <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="xref">7.1</a>.  <a href="#name-implicit-authentication" class="xref">Implicit authentication</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="xref">7.2</a>.  <a href="#name-authentication-of-certifica" class="xref">Authentication of Certificate Request</a></p>
 </li>
             </ul>
 </li>
@@ -1266,10 +1272,8 @@ Mechanisms (KEMs) to achieve certificate-based authentication.<a href="#section-
       </h2>
 <p id="section-1-1">DISCLAIMER: This is a work-in-progress draft.<a href="#section-1-1" class="pilcrow">¶</a></p>
 <p id="section-1-2">This document gives a construction for KEM-based authentication in TLS
-1.3.  The overall design approach is a simple: usage of Key Encapsulation
-Mechanisms (KEMs) for certificate-based authentication. Authentication happens via
-asymmetric cryptography by the usage of KEMs advertised as the long-term KEM public
-keys in the Certificate message.<a href="#section-1-2" class="pilcrow">¶</a></p>
+1.3. Authentication happens via asymmetric cryptography by the usage of
+KEMs advertised as the long-term KEM public keys in the Certificate.<a href="#section-1-2" class="pilcrow">¶</a></p>
 <p id="section-1-3">TLS 1.3 is in essence a signed key exchange protocol (if using certificate-based
 authentication). Authentication in TLS 1.3 is achieved by signing the handshake
 transcript with digital signatures algorithms. KEM-based authentication provides
@@ -1285,7 +1289,7 @@ mechanism, such as delegated credentials <span>[<a href="#I-D.ietf-tls-subcerts"
 believe KEMs are especially worth discussing in the context of the TLS protocol
 because NIST is in the process of standardizing post-quantum KEM algorithms to
 replace "classic" key exchange (based on elliptic curve or finite-field
-Diffie-Hellman <span>[<a href="#NISTPQC" class="xref">NISTPQC</a>]</span>).<a href="#section-1-5" class="pilcrow">¶</a></p>
+Diffie-Hellman) <span>[<a href="#NISTPQC" class="xref">NISTPQC</a>]</span>.<a href="#section-1-5" class="pilcrow">¶</a></p>
 <p id="section-1-6">This proposal draws inspiration from <span>[<a href="#I-D.ietf-tls-semistatic-dh" class="xref">I-D.ietf-tls-semistatic-dh</a>]</span>, which is in
 turn based on the OPTLS proposal for TLS 1.3 <span>[<a href="#KW16" class="xref">KW16</a>]</span>. However, these proposals
 require a non-interactive key exchange: they combine the client's public key with
@@ -1346,9 +1350,10 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 <a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-key-encapsulation-mechanism" class="section-name selfRef">Key Encapsulation Mechanisms</a>
         </h3>
 <p id="section-3.1-1">As this proposal relies heavily on KEMs, which are not originally
-used by TLS, we will provide a brief overview of this primitive.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+used by TLS, we will provide a brief overview of this primitive.
+Other cryptographic operations will be discussed later.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
 <p id="section-3.1-2">A Key Encapsulation Mechanism (KEM) is a cryptographic primitive that defines
-the methods <code>Encapsulate</code> and <code>Decapapsulate</code>. In this draft, we extend these
+the methods <code>Encapsulate</code> and <code>Decapsulate</code>. In this draft, we extend these
 operations with context separation strings:<a href="#section-3.1-2" class="pilcrow">¶</a></p>
 <p id="section-3.1-3"><code>Encapsulate(pkR, context_string)</code>:    Takes a public key, and produces a shared secret and encapsulation.<a href="#section-3.1-3" class="pilcrow">¶</a></p>
 <p id="section-3.1-4"><code>Decapsulate(enc, skR, context_str)</code>:  Takes the encapsulation and the private key. Returns the shared secret.<a href="#section-3.1-4" class="pilcrow">¶</a></p>
@@ -1361,9 +1366,11 @@ def Encapsulate(pk, context_string):
   ss = ctx.Export("", HKDF.Length)
   return (enc, ss)
 
-Decapsulate(enc, sk, context_string) =
-  HPKE.SetupBaseR(enc, sk, "tls13 auth-kem " + context_string)
-      .Export("", HKDF.Length)
+def Decapsulate(enc, sk, context_string):
+  return HPKE.SetupBaseR(enc,
+                         sk,
+                         "tls13 auth-kem " + context_string)
+             .Export("", HKDF.Length)
 </pre><a href="#section-3.1-6" class="pilcrow">¶</a>
 </div>
 <p id="section-3.1-7">Keys are generated and encoded for transmission following the conventions in <span>[<a href="#I-D.irtf-cfrg-hpke" class="xref">I-D.irtf-cfrg-hpke</a>]</span>.<a href="#section-3.1-7" class="pilcrow">¶</a></p>
@@ -1478,9 +1485,8 @@ Auth |                     &lt;--------  {KEMEncapsulation}  | Auth
 <p id="section-4.1-5">If the server is not satisfied with the client's certificates, it MAY, at its
 discretion, decide to continue or terminate the handshake.<a href="#section-4.1-5" class="pilcrow">¶</a></p>
 <p id="section-4.1-6">Unfortunately, AuthKEM client authentication requires an extra round-trip.
-Clients that know the server's long-term public KEM key might choose to use
-the abbreviated AuthKEM handshake and opportunistically send the client
-certificate as a 0-RTT-like message. We will discuss this later.<a href="#section-4.1-6" class="pilcrow">¶</a></p>
+Clients that know the server's long-term public KEM key MAY choose to use the abbreviated AuthKEM handshake and opportunistically send the client certificate as a 0-RTT-like message.
+We will discuss this later.<a href="#section-4.1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="relevant-handshake-messages">
@@ -1494,38 +1500,40 @@ KEM-based authentication uses the same set of messages every time that
 certificate-based authentication is needed.  Specifically:<a href="#section-4.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-4.2-2.1">
-            <code>Certificate</code>:  The certificate of the endpoint and any per-certificate
+            <p id="section-4.2-2.1.1"><code>Certificate</code>:  The certificate of the endpoint and any per-certificate
 extensions.  This message is omitted by the client if the server did not
 send a CertificateRequest message (thus indicating that the client should not
 authenticate with a certificate). For AuthKEM, <code>Certificate</code> MUST include the
 long-term KEM public key. Certificates MUST be handled in accordance
-with <span>[<a href="#RFC8446" class="xref">RFC8446</a>]</span>, section 4.4.2.4.<a href="#section-4.2-2.1" class="pilcrow">¶</a>
+with <span>[<a href="#RFC8446" class="xref">RFC8446</a>]</span>, section 4.4.2.4.<a href="#section-4.2-2.1.1" class="pilcrow">¶</a></p>
+<p id="section-4.2-2.1.2">
+Certificates MUST be handled in accordance with <span>[<a href="#RFC8446" class="xref">RFC8446</a>]</span>, section 4.4.2.4.<a href="#section-4.2-2.1.2" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-4.2-2.2">
-            <code>KEMEncapsulation</code>: A message containing the key encapsulation against the
-certificate's long-term public key, which yields an implicitly authenticated
-shared secret.<a href="#section-4.2-2.2" class="pilcrow">¶</a>
+            <code>KEMEncapsulation</code>: A key encapsulation against the certificate's long-term public key, which yields an implicitly authenticated shared secret.<a href="#section-4.2-2.2" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
 </div>
-<div id="differences-with-rfc8446-tls-13">
+<div id="overview-of-key-differences-with-rfc8446-tls-13">
 <section id="section-4.3">
-        <h3 id="name-differences-with-rfc8446-tl">
-<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-differences-with-rfc8446-tl" class="section-name selfRef">Differences with RFC8446 TLS 1.3</a>
+        <h3 id="name-overview-of-key-differences">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-overview-of-key-differences" class="section-name selfRef">Overview of key differences with RFC8446 TLS 1.3</a>
         </h3>
 <ul class="normal">
 <li class="normal" id="section-4.3-1.1">New types of <code>signature_algorithms</code> for KEMs.<a href="#section-4.3-1.1" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-4.3-1.2">New handshake message <code>KEMEncapsulation</code><a href="#section-4.3-1.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-4.3-1.2">Public keys in certificates are KEM algorithms<a href="#section-4.3-1.2" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-4.3-1.3">The key schedule mixes in the shared secrets from the authentication.<a href="#section-4.3-1.3" class="pilcrow">¶</a>
+          <li class="normal" id="section-4.3-1.3">New handshake message <code>KEMEncapsulation</code><a href="#section-4.3-1.3" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-4.3-1.4">The <code>Certificate</code> is sent encrypted with a new handshake encryption key.<a href="#section-4.3-1.4" class="pilcrow">¶</a>
+          <li class="normal" id="section-4.3-1.4">The key schedule mixes in the shared secrets from the authentication.<a href="#section-4.3-1.4" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-4.3-1.5">The client sends <code>Finished</code> before the server.<a href="#section-4.3-1.5" class="pilcrow">¶</a>
+          <li class="normal" id="section-4.3-1.5">The <code>Certificate</code> is sent encrypted with a new handshake encryption key.<a href="#section-4.3-1.5" class="pilcrow">¶</a>
 </li>
-          <li class="normal" id="section-4.3-1.6">The clients sends data before the server has sent <code>Finished</code>.<a href="#section-4.3-1.6" class="pilcrow">¶</a>
+          <li class="normal" id="section-4.3-1.6">The client sends <code>Finished</code> before the server.<a href="#section-4.3-1.6" class="pilcrow">¶</a>
+</li>
+          <li class="normal" id="section-4.3-1.7">The clients sends data before the server has sent <code>Finished</code>.<a href="#section-4.3-1.7" class="pilcrow">¶</a>
 </li>
         </ul>
 </section>
@@ -1558,8 +1566,8 @@ only after the <code>Finished</code> message from the server has been processed,
 proven as authentic. The security implications of this are discussed later.<a href="#section-4.5-1" class="pilcrow">¶</a></p>
 <p id="section-4.5-2"><strong>This is dicussed in <a href="https://github.com/claucece/draft-celi-wiggers-tls-authkem/issues/16">Github issue #16</a>.
 We would welcome feedback there.</strong><a href="#section-4.5-2" class="pilcrow">¶</a></p>
-<p id="section-4.5-3">Clients MAY choose to only accept post-handshake authentication.
-[TODO: Should they indicate this?]<a href="#section-4.5-3" class="pilcrow">¶</a></p>
+<p id="section-4.5-3">Clients MAY choose to only accept post-handshake authentication.<a href="#section-4.5-3" class="pilcrow">¶</a></p>
+<p id="section-4.5-4">TODO: Should they indicate this? TLS Flag?<a href="#section-4.5-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1682,13 +1690,13 @@ schemes) for the KEMs defined in <span>[<a href="#I-D.irtf-cfrg-hpke" class="xre
 we will be only using their internal KEM's API defined there.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.1-2">
 <pre>
-  enum {
-    dhkem_p256_sha256   =&gt; TBD,
-    dhkem_p384_sha384   =&gt; TBD,
-    dhkem_p521_sha512   =&gt; TBD,
-    dhkem_x25519_sha256 =&gt; TBD,
-    dhkem_x448_sha512   =&gt; TBD,
-  }
+enum {
+  dhkem_p256_sha256   =&gt; TBD,
+  dhkem_p384_sha384   =&gt; TBD,
+  dhkem_p521_sha512   =&gt; TBD,
+  dhkem_x25519_sha256 =&gt; TBD,
+  dhkem_x448_sha512   =&gt; TBD,
+}
 </pre><a href="#section-6.1-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.1-3">When present in the <code>signature_algorithms</code> extension, these values indicate AuthKEM support with the specified key exchange mode.
@@ -1705,10 +1713,10 @@ We are adding those extensions to the <code>ExtensionType</code> list from TLS 1
 <div class="alignLeft art-text artwork" id="section-6.2-2">
 <pre>
 enum {
-    ...
-    stored_auth_key (TBD),                 /* RFC TBD */
-    early_auth (TBD),                      /* RFC TBD */
-    (65535)
+  ...
+  stored_auth_key (TBD),                 /* RFC TBD */
+  early_auth (TBD),                      /* RFC TBD */
+  (65535)
 } ExtensionType;
 </pre><a href="#section-6.2-2" class="pilcrow">¶</a>
 </div>
@@ -1737,15 +1745,15 @@ It is used in ClientHello and ServerHello messages.<a href="#section-6.2.1-1" cl
 ClientHello, MUST contain the <code>StoredInformation</code> structure.<a href="#section-6.2.1-2" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.2.1-3">
 <pre>
-  struct {
-       select (type) {
-         case client:
-           opaque key_fingerprint&lt;1..255&gt;;
-           opaque ciphertext&lt;1..2^16-1&gt;
-         case server:
-           AcceptedAuthKey '1';
-       } body;
-  } StoredInformation
+struct {
+      select (type) {
+        case client:
+          opaque key_fingerprint&lt;1..255&gt;;
+          opaque ciphertext&lt;1..2^16-1&gt;
+        case server:
+          AcceptedAuthKey '1';
+      } body;
+} StoredInformation
 </pre><a href="#section-6.2.1-3" class="pilcrow">¶</a>
 </div>
 <p id="section-6.2.1-4">This extension MUST contain the folowing information when included in <code>ClientHello</code> messages:<a href="#section-6.2.1-4" class="pilcrow">¶</a></p>
@@ -1768,24 +1776,24 @@ length information of the record layer).<a href="#section-6.2.1-8.1" class="pilc
 <p id="section-6.2.1-9">If this extension is not present, the client and the server MUST NOT negotiate the abbreviated AuthKEM handshake.<a href="#section-6.2.1-9" class="pilcrow">¶</a></p>
 <p id="section-6.2.1-10">The presence of the fingerprint might reveal information about the identity of the server that the client has.
 This is discussed further under <span><a href="#sec-considerations" class="xref">Security Considerations</a> (<a href="#sec-considerations" class="xref">Section 7</a>)</span>.<a href="#section-6.2.1-10" class="pilcrow">¶</a></p>
-<div id="early-authentication">
-<section id="section-6.2.1.1">
-            <h5 id="name-early-authentication">
-<a href="#section-6.2.1.1" class="section-number selfRef">6.2.1.1. </a><a href="#name-early-authentication" class="section-name selfRef">Early authentication</a>
-            </h5>
-<p id="section-6.2.1.1-1">To indicate the client will attempt client authentication in the abbreviated AuthKEM handshake, and for the server to indicate acceptance of attempting this authentication mechanism,
-we define the ```early_auth (TDB)`` extension.
-It is used in ClientHello and ServerHello messages.<a href="#section-6.2.1.1-1" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-6.2.1.1-2">
-<pre>
-  struct {
-  } EarlyAuth
-</pre><a href="#section-6.2.1.1-2" class="pilcrow">¶</a>
-</div>
-<p id="section-6.2.1.1-3">This is an empty extension.<a href="#section-6.2.1.1-3" class="pilcrow">¶</a></p>
-<p id="section-6.2.1.1-4">It MUST NOT be sent if the <code>stored_auth_key</code> extension is not present.<a href="#section-6.2.1.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
+<div id="early-authentication">
+<section id="section-6.2.2">
+          <h4 id="name-early-authentication">
+<a href="#section-6.2.2" class="section-number selfRef">6.2.2. </a><a href="#name-early-authentication" class="section-name selfRef">Early authentication</a>
+          </h4>
+<p id="section-6.2.2-1">To indicate the client will attempt client authentication in the abbreviated AuthKEM handshake, and for the server to indicate acceptance of attempting this authentication mechanism,
+we define the ```early_auth (TDB)`` extension.
+It is used in ClientHello and ServerHello messages.<a href="#section-6.2.2-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-6.2.2-2">
+<pre>
+struct {
+} EarlyAuth
+</pre><a href="#section-6.2.2-2" class="pilcrow">¶</a>
+</div>
+<p id="section-6.2.2-3">This is an empty extension.<a href="#section-6.2.2-3" class="pilcrow">¶</a></p>
+<p id="section-6.2.2-4">It MUST NOT be sent if the <code>stored_auth_key</code> extension is not present.<a href="#section-6.2.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1801,22 +1809,22 @@ for the addition of a <code>KEMEncapsulation</code> message and does not use
 the <code>CertificateVerify</code> one.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.3-2">
 <pre>
-  enum {
-      ...
-      kem_encapsulation(tbd),
-      ...
-      (255)
-    } HandshakeType;
+enum {
+    ...
+    kem_encapsulation(tbd),
+    ...
+    (255)
+  } HandshakeType;
 
-  struct {
-      HandshakeType msg_type;    /* handshake type */
-      uint24 length;             /* remaining bytes in message */
-      select (Handshake.msg_type) {
-          ...
-          case kem_encapsulation:     KEMEncapsulation;
-          ...
-      };
-  } Handshake;
+struct {
+    HandshakeType msg_type;    /* handshake type */
+    uint24 length;             /* remaining bytes in message */
+    select (Handshake.msg_type) {
+        ...
+        case kem_encapsulation:     KEMEncapsulation;
+        ...
+    };
+} Handshake;
 </pre><a href="#section-6.3-2" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3-3">Protocol messages MUST be sent in the order defined in Section 4.
@@ -1825,10 +1833,10 @@ abort the handshake with an "unexpected_message" alert.<a href="#section-6.3-3" 
 <p id="section-6.3-4">The KEMEncapsulation message is defined as follows:<a href="#section-6.3-4" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.3-5">
 <pre>
-  struct {
-      opaque certificate_request_context&lt;0..2^8-1&gt;
-      opaque encapsulation&lt;0..2^16-1&gt;;
-  } KEMEncapsulation;
+struct {
+    opaque certificate_request_context&lt;0..2^8-1&gt;
+    opaque encapsulation&lt;0..2^16-1&gt;;
+} KEMEncapsulation;
 </pre><a href="#section-6.3-5" class="pilcrow">¶</a>
 </div>
 <p id="section-6.3-6">The encapsulation field is the result of a <code>Encapsulate</code> function. The
@@ -1876,8 +1884,17 @@ TLS 1.3, in turn defined by <span>[<a href="#RFC5869" class="xref">RFC5869</a>]<
 Derive-Secret functions.  The general pattern for adding a new secret
 is to use HKDF-Extract with the Salt being the current secret state
 and the Input Keying Material (IKM) being the new secret to be added.<a href="#section-6.4.1-2" class="pilcrow">¶</a></p>
-<p id="section-6.4.1-3">The full key schedule proceeds as follows:<a href="#section-6.4.1-3" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-6.4.1-4">
+<p id="section-6.4.1-3">The notable differences are:<a href="#section-6.4.1-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.4.1-4.1">The addition of the <code>Authenticated Handshake Secret</code> and a new set of
+handshake traffic encryption keys.<a href="#section-6.4.1-4.1" class="pilcrow">¶</a>
+</li>
+            <li class="normal" id="section-6.4.1-4.2">The inclusion of the <code>SSs</code> and <code>SSc</code> shared secrets as IKM to 
+<code>Authenticated Handshake Secret</code> and <code>Main Secret</code>, respectively<a href="#section-6.4.1-4.2" class="pilcrow">¶</a>
+</li>
+          </ul>
+<p id="section-6.4.1-5">The full key schedule proceeds as follows:<a href="#section-6.4.1-5" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-6.4.1-6">
 <pre>
             0
             |
@@ -1913,11 +1930,11 @@ and the Input Keying Material (IKM) being the new secret to be added.<a href="#s
             |
             +--&gt; Derive-Secret(., "c ahs traffic",
             |                  ClientHello...KEMEncapsulation)
-            |                  = client_handshake_authenticated_traffic_secret
+            |         = client_handshake_authenticated_traffic_secret
             |
             +--&gt; Derive-Secret(., "s ahs traffic",
             |                  ClientHello...KEMEncapsulation)
-            |                  = server_handshake_authenticated_traffic_secret
+            |         = server_handshake_authenticated_traffic_secret
             v
             Derive-Secret(., "derived", "") = dAHS
             |
@@ -1940,9 +1957,9 @@ SSc||0 * -&gt; HKDF-Extract = Main Secret
                                ClientHello...client Finished)
                                = resumption_master_secret
 
-The * means that if client authentication was requested the `SSc` value should
-be used. Otherwise, the `0` value is used.
-</pre><a href="#section-6.4.1-4" class="pilcrow">¶</a>
+*: if client authentication was requested, the `SSc` value should
+   be used. Otherwise, the `0` value is used.
+</pre><a href="#section-6.4.1-6" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
@@ -2018,7 +2035,7 @@ explicit authentication when sending their <code>Finished</code> message (one ro
 earlier) and the client, in turn, when they send their <code>Finished</code> message
 (one round-trip earlier). Full downgrade resilience and forward secrecy
 is achieved once the AuthKEM handshake completes.<a href="#section-6.4.4-1" class="pilcrow">¶</a></p>
-<p id="section-6.4.4-2">The key used to compute the <code>Finished</code> message is computed from the
+<p id="section-6.4.4-2">The key used to compute the <code>Finished</code> message MUST be computed from the
 <code>MainSecret</code> using HKDF. Specifically:<a href="#section-6.4.4-2" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-6.4.4-3">
 <pre>
@@ -2122,6 +2139,26 @@ last explicit Authentication message, any data sent at that point is,
 being sent to an implicitly authenticated peer.<a href="#section-7.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
+<div id="authentication-of-certificate-request">
+<section id="section-7.2">
+        <h3 id="name-authentication-of-certifica">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-authentication-of-certifica" class="section-name selfRef">Authentication of Certificate Request</a>
+        </h3>
+<p id="section-7.2-1">Due to the implicit authentication of the server's messages during the
+full AuthKEM handshake, the <code>CertificateRequest</code> message can not be
+authenticated before the client received <code>Finished</code>.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<p id="section-7.2-2">The key schedule guarantees that the server can not read the client's 
+certificate message (as discussed above). An active adversary that 
+maliciously inserts a <code>CertificateRequest</code> message will also 
+result in a mismatch in transcript hashes, which will cause 
+the handshake to fail.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
+<p id="section-7.2-3">However, there may be side effects. The adversary might learn that
+the client has a certificate by observing the length of the messages
+sent. There may also be side-effects, especially in situations where
+the client is prompted to e.g. approve use or unlock a certificate
+stored encrypted or on a smart card.<a href="#section-7.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <section id="section-8">
@@ -2178,7 +2215,7 @@ being sent to an implicitly authenticated peer.<a href="#section-7.1-5" class="p
 <dd class="break"></dd>
 <dt id="KEMTLSPDK">[KEMTLSPDK]</dt>
         <dd>
-<span class="refAuthor">Stebila, D.</span>, <span class="refAuthor">Schwabe, P.</span>, and <span class="refAuthor">T. Wiggers</span>, <span class="refTitle">"More Efficient KEMTLS with Pre-Shared Keys"</span>, <span class="seriesInfo">DOI 10.1007/978-3-030-88418-5_1</span>, <span class="seriesInfo">IACR ePrint https://ia.cr/2021/779</span>, <time datetime="2021-05" class="refDate">May 2021</time>, <span>&lt;<a href="https://doi.org/10.1007/978-3-030-88418-5_1">https://doi.org/10.1007/978-3-030-88418-5_1</a>&gt;</span>. </dd>
+<span class="refAuthor">Stebil, D.</span>, <span class="refAuthor">Schwabe, P.</span>, and <span class="refAuthor">T. Wiggers</span>, <span class="refTitle">"More Efficient KEMTLS with Pre-Shared Keys"</span>, <span class="seriesInfo">DOI 10.1007/978-3-030-88418-5_1</span>, <span class="seriesInfo">IACR ePrint https://ia.cr/2021/779</span>, <time datetime="2021-05" class="refDate">May 2021</time>, <span>&lt;<a href="https://doi.org/10.1007/978-3-030-88418-5_1">https://doi.org/10.1007/978-3-030-88418-5_1</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="KW16">[KW16]</dt>
         <dd>
@@ -2187,10 +2224,6 @@ being sent to an implicitly authenticated peer.<a href="#section-7.1-5" class="p
 <dt id="NISTPQC">[NISTPQC]</dt>
         <dd>
 <span class="refAuthor">NIST</span>, <span class="refTitle">"Post-Quantum Cryptography Standardization"</span>, <time datetime="2020" class="refDate">2020</time>. </dd>
-<dd class="break"></dd>
-<dt id="RFC5280">[RFC5280]</dt>
-        <dd>
-<span class="refAuthor">Cooper, D.</span>, <span class="refAuthor">Santesson, S.</span>, <span class="refAuthor">Farrell, S.</span>, <span class="refAuthor">Boeyen, S.</span>, <span class="refAuthor">Housley, R.</span>, and <span class="refAuthor">W. Polk</span>, <span class="refTitle">"Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile"</span>, <span class="seriesInfo">RFC 5280</span>, <span class="seriesInfo">DOI 10.17487/RFC5280</span>, <time datetime="2008-05" class="refDate">May 2008</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc5280">https://www.rfc-editor.org/rfc/rfc5280</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC5869">[RFC5869]</dt>
       <dd>
