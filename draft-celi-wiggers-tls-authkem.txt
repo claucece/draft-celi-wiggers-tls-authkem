@@ -16,7 +16,7 @@ Expires: 8 September 2022                   Radboud University & MPI S&P
 
 
                   KEM-based Authentication for TLS 1.3
-                 draft-celi-wiggers-tls-authkem-latest
+                   draft-celi-wiggers-tls-authkem-01
 
 Abstract
 
