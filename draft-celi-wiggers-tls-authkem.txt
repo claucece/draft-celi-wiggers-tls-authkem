@@ -129,8 +129,8 @@ Table of Contents
    delegation mechanism, such as delegated credentials
    [I-D.ietf-tls-subcerts].
 
-   In this proposal, we use the DH-based KEMs from [I-D.irtf-cfrg-hpke].
-   We believe KEMs are especially worth discussing in the context of the
+   In this proposal, we use the DH-based KEMs from [RFC9180].  We
+   believe KEMs are especially worth discussing in the context of the
    TLS protocol because NIST is in the process of standardizing post-
    quantum KEM algorithms to replace "classic" key exchange (based on
    elliptic curve or finite-field Diffie-Hellman) [NISTPQC].
@@ -203,9 +203,8 @@ Table of Contents
    Decapsulate(enc, skR, context_str): Takes the encapsulation and the
    private key.  Returns the shared secret.
 
-   We implement these methods through the KEMs defined in
-   [I-D.irtf-cfrg-hpke] to export shared secrets appropriate for using
-   with the HKDF in TLS 1.3:
+   We implement these methods through the KEMs defined in [RFC9180] to
+   export shared secrets appropriate for using with the HKDF in TLS 1.3:
 
    def Encapsulate(pk, context_string):
      enc, ctx = HPKE.SetupBaseS(pk, "tls13 auth-kem " + context_string)
@@ -219,7 +218,7 @@ Table of Contents
                 .Export("", HKDF.Length)
 
    Keys are generated and encoded for transmission following the
-   conventions in [I-D.irtf-cfrg-hpke].
+   conventions in [RFC9180].
 
 4.  Full 1.5-RTT AuthKEM Handshake Protocol
 
@@ -515,8 +514,8 @@ Table of Contents
    it were a signature scheme (part of the signature_algorithms
    extension).  We thus add these new signature scheme values (even
    though, they are not signature schemes) for the KEMs defined in
-   [I-D.irtf-cfrg-hpke] Section 7.1.  Note that we will be only using
-   their internal KEM's API defined there.
+   [RFC9180] Section 7.1.  Note that we will be only using their
+   internal KEM's API defined there.
 
    enum {
      dhkem_p256_sha256   => TBD,
@@ -969,13 +968,6 @@ Table of Contents
               2021, <https://datatracker.ietf.org/doc/html/draft-ietf-
               tls-subcerts-11>.
 
-   [I-D.irtf-cfrg-hpke]
-              Barnes, R. L., Bhargavan, K., Lipp, B., and C. A. Wood,
-              "Hybrid Public Key Encryption", Work in Progress,
-              Internet-Draft, draft-irtf-cfrg-hpke-12, 2 September 2021,
-              <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-
-              hpke-12>.
-
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
@@ -994,6 +986,10 @@ Table of Contents
    [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
               Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
               <https://www.rfc-editor.org/rfc/rfc8446>.
+
+   [RFC9180]  Barnes, R., Bhargavan, K., Lipp, B., and C. Wood, "Hybrid
+              Public Key Encryption", RFC 9180, DOI 10.17487/RFC9180,
+              February 2022, <https://www.rfc-editor.org/rfc/rfc9180>.
 
 8.2.  Informative References
 
